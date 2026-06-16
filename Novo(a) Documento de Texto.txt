@@ -1,0 +1,79 @@
+Documento de Planeamento Técnico: Sistema Interativo de Processamento Digital de Imagens
+Disciplina: Computação Gráfica e Processamento de Imagens
+Data: Junho de 2026
+Integrantes:
+Jean kronabuer de Moura
+Henrique Froeder
+Nicolas Pereira de Castro 
+Ígor Paslauski Pedroso de Oliveira 
+1. Introdução e Escopo do Projeto
+1.1. Objetivo Geral
+O presente projeto tem como objetivo projetar e desenvolver um software interativo para o Processamento Digital de Imagens (PDI). A aplicação fornecerá uma Interface Gráfica de Utilizador (GUI) que permitirá a manipulação de matrizes de imagens no domínio espacial, aplicando técnicas de realce, filtragem e análise estatística (histogramas) em tempo real.
+1.2. Justificativa Teórica e Tecnológica
+O processamento de imagens consiste na aplicação de algoritmos matemáticos sobre matrizes bidimensionais cujos elementos (píxeis) representam níveis de intensidade luminosa. Conforme a literatura estabelecida (AZEVEDO; CONCI; LETA, 2022; GONZALEZ; WOODS, 2010), a visualização interativa dos efeitos das operações ponto a ponto e espaciais é fundamental para a compreensão das características morfológicas da imagem. O sistema será desenvolvido em Python, utilizando a biblioteca NumPy para operações matriciais otimizadas de baixo nível e OpenCV para a implementação eficiente dos algoritmos de visão computacional.
+2. Especificação da Interface Gráfica (Wireframe e UX)
+A interface foi projetada visando a usabilidade e a resposta imediata (arquitetura event-driven). O layout divide a aplicação em áreas lógicas de controlo, visualização e análise de dados.
++-----------------------------------------------------------------------+
+
+
+
+Diretrizes de Interface:
+Feedback Visual: Alterações nos sliders de parâmetros disparam eventos que recalculam a matriz da imagem e atualizam o Canvas e o Histograma em tempo real (taxa de atualização percetível inferior a 200ms).
+Prevenção de Erros: Controlos de processamento permanecem desabilitados (estado disabled) até que uma matriz de imagem válida seja carregada na memória.
+3. Fundamentação Matemática dos Filtros e Transformações
+As técnicas selecionadas abordam diferentes categorias do processamento no domínio espacial.
+3.1. Transformação Linear de Intensidade (Operação Pontual)
+Princípio: Modificação direta dos valores de intensidade  através de uma função de mapeamento linear .
+Modelo Matemático:
+Onde  (ganho) ajusta o contraste e  (bias) ajusta o brilho. A função  é essencial computacionalmente para garantir que os valores resultantes se mantenham no intervalo do tipo de dado numérico unsigned integer 8-bit (uint8).
+Efeito: Expansão ou compressão do alcance dinâmico da imagem.
+3.2. Suavização com Filtro Gaussiano (Filtro Passa-Baixa)
+Princípio: Atenuação de ruídos e detalhes de alta frequência espacial através da operação de convolução  entre a imagem e um kernel isotrópico.
+Modelo Matemático: O kernel  é amostrado a partir da função bidimensional de Gauss:
+Onde a variância () controla o grau de espalhamento (desfoque).
+Efeito: Borramento controlado da imagem, ideal como etapa de pré-processamento para algoritmos de segmentação.
+3.3. Detecção de Bordas via Operador de Sobel (Filtro Passa-Alta)
+Princípio: Cálculo aproximado do gradiente da imagem, destacando áreas de rápida variação de intensidade (derivadas espaciais de primeira ordem).
+Modelo Matemático: Utiliza convolução com dois kernels ortogonais ( e ). A magnitude do gradiente  em cada píxel é calculada por:
+Efeito: Destaque de contornos geométricos e silhuetas, suprimindo áreas de transição suave (fundo liso torna-se escuro).
+3.4. Equalização de Histograma (Realce Global)
+Princípio: Transformação não-linear que visa redistribuir a Função de Densidade de Probabilidade (PDF) da imagem, resultando em uma Função de Distribuição Acumulada (CDF) aproximadamente linear.
+Modelo Matemático: O novo valor do píxel  é definido por:
+Onde  é o número de níveis de cinzento (geralmente 256) e  é a probabilidade de ocorrência do nível .
+Efeito: Maximização do contraste global, revelando detalhes em imagens com má iluminação (subexpostas ou sobre-expostas).
+4. Requisitos do Sistema
+4.1. Requisitos Funcionais (RF)
+RF01: O sistema deve importar imagens nos formatos .jpg, .jpeg e .png.
+RF02: O sistema deve exportar a imagem processada para o disco local.
+RF03: O sistema deve aplicar os algoritmos de Brilho/Contraste, Gaussiano, Sobel e Equalização.
+RF04: O sistema deve gerar e desenhar o histograma de frequências da imagem atual no momento exato de qualquer modificação.
+RF05: O sistema deve manter o estado original da matriz da imagem para permitir a função de reversão ("Desfazer").
+4.2. Requisitos Não Funcionais (RNF)
+RNF01: A aplicação deve ser desenvolvida sob o paradigma de Orientação a Objetos ou programação modular estruturada.
+RNF02: O tempo de resposta para a aplicação de transformações lineares não deve exceder 500ms para imagens até resolução Full HD.
+5. Arquitetura do Software e Fluxo de Dados
+A arquitetura do software será baseada no padrão Model-View-Controller (MVC), garantindo o desacoplamento entre a interface gráfica e os cálculos matriciais intensivos.
+View (gui.py): Módulo construído com bibliotecas nativas (como Tkinter) ou frameworks (PyQt/PySide). Gere unicamente o desenho dos widgets e a captura de eventos de input do utilizador.
+Model (filtros.py): O "motor" do processamento. Contém funções que recebem objetos numpy.ndarray (matrizes da imagem) e parâmetros escalares numéricos. Encapsula as chamadas diretas às funções da biblioteca OpenCV (ex: cv2.filter2D, cv2.calcHist).
+Controller (main.py): Instancia a janela, armazena a variável global/instância da imagem carregada em memória (estado_atual_imagem) e atua como ponte, enviando os parâmetros da View para o Model e devolvendo a matriz calculada para atualização na View.
+6. Plano de Execução e Divisão de Papéis
+Para mitigar riscos e garantir a entrega de todos os artefactos com qualidade, as tarefas foram divididas pelas quatro áreas fundamentais do projeto de software:
+Engenharia de Front-end e Integração GUI (Responsável: [Nome do Integrante 1])
+Codificação das telas, painéis e design geral da aplicação.
+Implementação do loop de eventos, componentes interativos (sliders/botões) e interações do utilizador.
+Lógica de conversão de imagens entre o formato do OpenCV (BGR/Mat) e o formato suportado pelo Canvas da interface gráfica.
+Engenharia de Visão Computacional (Core Algorítmico) (Responsável: [Nome do Integrante 2])
+Pesquisa e implementação rigorosa das funções matemáticas recorrendo ao OpenCV e NumPy.
+Construção das rotinas para o cálculo do histograma interativo e dos algoritmos de equalização.
+Validação dos resultados matemáticos dos filtros espaciais (tamanhos de kernel, tratamento de margens/padding).
+Arquitetura de Software e Integração MVC (Responsável: [Nome do Integrante 3])
+Desenvolvimento da lógica do Controller (main.py), garantindo a comunicação correta entre a View e o Model.
+Gestão de estado da aplicação (implementação da lógica de cache/memória para suportar a função "Desfazer").
+Otimização do fluxo de dados para assegurar que a taxa de atualização em tempo real cumpra o requisito de desempenho (RNF02).
+Garantia de Qualidade (QA) e Documentação Técnica (Responsável: [Nome do Integrante 4])
+Tratamento preventivo de exceções e validação de inputs (gestão de ficheiros corrompidos, extensões inválidas, etc.).
+Elaboração do plano de testes e execução de testes funcionais e de usabilidade da interface.
+Organização do repositório de código, elaboração de documentação técnica, comentários no código fonte e formatação final deste relatório.
+Referências Bibliográficas:
+AZEVEDO, Eduardo; CONCI, Aura; LETA, Fabiana. Computação gráfica: teoria e prática: geração de imagens. v. 2. Rio de Janeiro: Alta Books, 2022.
+GONZALEZ, Rafael C.; WOODS, Richard E. Processamento digital de imagens. 3. ed. São Paulo: Pearson, 2010.
