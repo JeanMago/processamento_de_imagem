@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)
 ![CustomTkinter](https://img.shields.io/badge/GUI-CustomTkinter-blueviolet.svg)
-![License](https://img.shields.io/badge/license-MIT-important.svg)
+
 
 O **PDI PhotoPro** é uma aplicação desktop educacional para o estudo de Processamento Digital de Imagens (PDI). Desenvolvido com Python, OpenCV e CustomTkinter, oferece uma plataforma didática para aplicação de filtros espaciais, transformações ponto a ponto e análise estatística de cores através de uma interface interativa.
 
