@@ -82,7 +82,7 @@ Funções de suporte para conversão de formatos e análise.
 
 ## 5. Interface Gráfica (`src/gui/app.py`)
 
-Implementa a interface do usuário inspirada no Adobe Photoshop.
+Implementa a interface do usuário para interação com os algoritmos de PDI.
 
 ### Classe `ImageApp` (Herda de `ctk.CTk`)
 - **Principais Componentes**:

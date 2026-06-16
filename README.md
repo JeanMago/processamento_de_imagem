@@ -5,13 +5,25 @@
 ![CustomTkinter](https://img.shields.io/badge/GUI-CustomTkinter-blueviolet.svg)
 ![License](https://img.shields.io/badge/license-MIT-important.svg)
 
-O **PDI PhotoPro** é uma aplicação desktop de nível profissional para Processamento Digital de Imagens (PDI), inspirada no fluxo de trabalho do Adobe Photoshop. Desenvolvido com Python, OpenCV e CustomTkinter, oferece um ambiente robusto para aplicação de filtros espaciais, transformações ponto a ponto e análise de cores através de uma interface "Studio" moderna e intuitiva.
+O **PDI PhotoPro** é uma aplicação desktop educacional para o estudo de Processamento Digital de Imagens (PDI). Desenvolvido com Python, OpenCV e CustomTkinter, oferece uma plataforma didática para aplicação de filtros espaciais, transformações ponto a ponto e análise estatística de cores através de uma interface interativa.
 
 ---
 
-## 🎨 Interface Profissional (Estilo Photoshop)
+## 🎓 Fins Acadêmicos
 
-- **Painel de Propriedades Intuitivo:** Todos os ajustes (Brilho, Contraste, Limiar) e Filtros são agrupados em cartões de alta fidelidade com feedback numérico em tempo real.
+Este projeto foi desenvolvido como parte integrante da disciplina de **Computação Gráfica e Processamento de Imagens** (Junho de 2026). O objetivo é aplicar conceitos teóricos de manipulação de matrizes de imagens no domínio espacial, realce, filtragem e análise estatística.
+
+### 👥 Integrantes do Grupo:
+- **Jean Kronabuer de Moura**
+- **Henrique Froeder**
+- **Nicolas Pereira de Castro**
+- **Ígor Paslauski Pedroso de Oliveira**
+
+---
+
+## 🎨 Interface Interativa
+
+- **Painel de Controle de Propriedades:** Todos os ajustes (Brilho, Contraste, Limiar) e Filtros são agrupados em painéis com feedback numérico em tempo real para fins de análise.
 - **Componentes de UI Modernos:** Utiliza botões segmentados para seleção de modo e sliders dinâmicos.
 - **Suporte HighDPI:** A renderização nativa usando `ctk.CTkImage` garante visuais nítidos em monitores 4K e telas com escala.
 - **Espaço de Trabalho Interativo:** Zoom em tempo real (roda do mouse), rastreamento de coordenadas e uma barra de ações rápidas para operações de Desfazer/Refazer/Reset.
