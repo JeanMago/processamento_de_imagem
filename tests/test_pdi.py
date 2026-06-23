@@ -10,8 +10,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from filters.filters import apply_gaussian_blur, apply_median_blur, apply_laplacian, apply_sobel
 from transformations.transformations import (
     apply_brightness_contrast, apply_binarization, apply_invert_colors, 
-    apply_grayscale, apply_isolate_color
+    apply_grayscale, apply_isolate_color, apply_resize, apply_rotation,
+    apply_scale
 )
+from utils.utils import cv2_to_pil, calculate_histogram
 
 class TestPDI(unittest.TestCase):
     @classmethod
@@ -49,6 +51,35 @@ class TestPDI(unittest.TestCase):
         for val in unique_values:
             self.assertIn(val, [0, 255])
 
+        # Test other binarization methods
+        res_inv = apply_binarization(self.test_image, threshold=127, method='Binary Inverse')
+        self.assertEqual(res_inv.shape, self.test_image.shape)
+        
+        res_otsu = apply_binarization(self.test_image, method='Otsu')
+        self.assertEqual(res_otsu.shape, self.test_image.shape)
+        
+        res_mean = apply_binarization(self.test_image, method='Adaptive Mean', block_size=11, c=2)
+        self.assertEqual(res_mean.shape, self.test_image.shape)
+
+        res_gauss = apply_binarization(self.test_image, method='Adaptive Gaussian', block_size=11, c=2)
+        self.assertEqual(res_gauss.shape, self.test_image.shape)
+
+    def test_resize(self):
+        res = apply_resize(self.test_image, 150, 80)
+        self.assertEqual(res.shape, (80, 150, 3))
+
+    def test_rotation(self):
+        # Rotation by 90 degrees with bounds kept
+        res_bounds = apply_rotation(self.test_image, 90, keep_bounds=True)
+        # Standard rotation without keeping bounds
+        res_no_bounds = apply_rotation(self.test_image, 45, keep_bounds=False)
+        self.assertEqual(res_no_bounds.shape, self.test_image.shape)
+        self.assertFalse(np.array_equal(res_no_bounds, self.test_image))
+
+    def test_scale(self):
+        res = apply_scale(self.test_image, 1.5, 2.0)
+        self.assertEqual(res.shape, (200, 150, 3))
+
     def test_invert_colors(self):
         res = apply_invert_colors(self.test_image)
         self.assertEqual(res.shape, self.test_image.shape)
@@ -64,6 +95,19 @@ class TestPDI(unittest.TestCase):
     def test_isolate_color(self):
         res = apply_isolate_color(self.test_image, 'red')
         self.assertEqual(res.shape, self.test_image.shape)
+
+    def test_brightness_contrast_negative(self):
+        img = np.ones((10, 10, 3), dtype=np.uint8) * 50
+        res = apply_brightness_contrast(img, brightness=-60, contrast=0)
+        self.assertTrue(np.all(res == 0))
+
+    def test_grayscale_utils(self):
+        gray_img = np.ones((10, 10), dtype=np.uint8) * 100
+        pil_img = cv2_to_pil(gray_img)
+        self.assertEqual(pil_img.size, (10, 10))
+        hist = calculate_histogram(gray_img)
+        self.assertEqual(len(hist), 1)
+        self.assertEqual(hist[0][1], 'k')
 
 if __name__ == '__main__':
     unittest.main()
