@@ -28,6 +28,8 @@ class ImageApp(ctk.CTk):
         self.image_service = ImageService()
         self.current_file_path = None
         self.current_tool = "None"
+        self.last_processed_preview = None
+        self._resize_job = None
         
         # Interaction State
         self.zoom_level = 1.0
@@ -79,6 +81,21 @@ class ImageApp(ctk.CTk):
     def bind_events(self):
         self.processed_canvas.bind("<Motion>", self.track_mouse)
         self.processed_canvas.bind("<MouseWheel>", self.handle_zoom)
+        self.left_canvas_frame.bind("<Configure>", self.on_canvas_resize)
+        self.right_canvas_frame.bind("<Configure>", self.on_canvas_resize)
+
+    def on_canvas_resize(self, event=None):
+        if self.image_service.original_image is None: return
+        if hasattr(self, '_resize_job') and self._resize_job is not None:
+            try:
+                self.after_cancel(self._resize_job)
+            except Exception:
+                pass
+        self._resize_job = self.after(15, self._perform_canvas_resize)
+
+    def _perform_canvas_resize(self):
+        self._resize_job = None
+        self.update_displays(is_resize=True)
 
     def track_mouse(self, event):
         self.coords_label.configure(text=f"X: {event.x}, Y: {event.y}")
@@ -224,7 +241,7 @@ class ImageApp(ctk.CTk):
             button_hover_color="#666"
         )
         self.filter_choice_menu.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkLabel(choice_frame, text="Selecione um filtro para ajustar suas propriedades e aplicar na imagem.", font=ctk.CTkFont(size=8, style="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        ctk.CTkLabel(choice_frame, text="Selecione um filtro para ajustar suas propriedades e aplicar na imagem.", font=ctk.CTkFont(size=8, slant="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
 
         # Dynamic parameter frames container
         self.filter_params_frame = ctk.CTkFrame(scroll, fg_color="transparent")
@@ -253,7 +270,7 @@ class ImageApp(ctk.CTk):
         self.slider_filter_gauss_s = ctk.CTkSlider(self.frame_param_gaussian, from_=0.1, to=10.0, command=self.on_filter_param_change, progress_color="#3d85c6", button_color="#3d85c6", button_hover_color="#2966a3")
         self.slider_filter_gauss_s.set(1.0)
         self.slider_filter_gauss_s.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkLabel(self.frame_param_gaussian, text="Aplica uma suavização gaussiana. Ideal para redução de ruído genérico.", font=ctk.CTkFont(size=8, style="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        ctk.CTkLabel(self.frame_param_gaussian, text="Aplica uma suavização gaussiana. Ideal para redução de ruído genérico.", font=ctk.CTkFont(size=8, slant="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
         
         # 2. Median Blur Parameters Frame
         self.frame_param_median = ctk.CTkFrame(self.filter_params_frame, fg_color="#242424", corner_radius=8, border_width=1, border_color="#3a3a3a")
@@ -268,7 +285,7 @@ class ImageApp(ctk.CTk):
         self.slider_filter_median_k = ctk.CTkSlider(self.frame_param_median, from_=1, to=21, number_of_steps=10, command=self.on_filter_param_change, progress_color="#3d85c6", button_color="#3d85c6", button_hover_color="#2966a3")
         self.slider_filter_median_k.set(5)
         self.slider_filter_median_k.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkLabel(self.frame_param_median, text="Filtro de mediana. Excelente para remoção de ruídos tipo sal e pimenta.", font=ctk.CTkFont(size=8, style="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        ctk.CTkLabel(self.frame_param_median, text="Filtro de mediana. Excelente para remoção de ruídos tipo sal e pimenta.", font=ctk.CTkFont(size=8, slant="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
         
         # 3. Sobel Parameters Frame
         self.frame_param_sobel = ctk.CTkFrame(self.filter_params_frame, fg_color="#242424", corner_radius=8, border_width=1, border_color="#3a3a3a")
@@ -298,7 +315,7 @@ class ImageApp(ctk.CTk):
         self.slider_filter_sobel_k = ctk.CTkSlider(self.frame_param_sobel, from_=1, to=7, number_of_steps=3, command=self.on_filter_param_change, progress_color="#3d85c6", button_color="#3d85c6", button_hover_color="#2966a3")
         self.slider_filter_sobel_k.set(3)
         self.slider_filter_sobel_k.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkLabel(self.frame_param_sobel, text="Destaca gradientes e transições de intensidade. Útil para detecção de bordas orientadas.", font=ctk.CTkFont(size=8, style="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        ctk.CTkLabel(self.frame_param_sobel, text="Destaca gradientes e transições de intensidade. Útil para detecção de bordas orientadas.", font=ctk.CTkFont(size=8, slant="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
 
         # 4. Laplacian Parameters Frame
         self.frame_param_laplacian = ctk.CTkFrame(self.filter_params_frame, fg_color="#242424", corner_radius=8, border_width=1, border_color="#3a3a3a")
@@ -313,7 +330,7 @@ class ImageApp(ctk.CTk):
         self.slider_filter_laplacian_k = ctk.CTkSlider(self.frame_param_laplacian, from_=1, to=7, number_of_steps=3, command=self.on_filter_param_change, progress_color="#3d85c6", button_color="#3d85c6", button_hover_color="#2966a3")
         self.slider_filter_laplacian_k.set(3)
         self.slider_filter_laplacian_k.pack(fill="x", padx=10, pady=(0, 6))
-        ctk.CTkLabel(self.frame_param_laplacian, text="Realça contornos usando a segunda derivada. Destaca todas as direções igualmente.", font=ctk.CTkFont(size=8, style="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
+        ctk.CTkLabel(self.frame_param_laplacian, text="Realça contornos usando a segunda derivada. Destaca todas as direções igualmente.", font=ctk.CTkFont(size=8, slant="italic"), text_color="#888", wraplength=220, justify="left").pack(anchor="w", padx=10, pady=(0, 10))
 
         # Action Frame
         self.frame_filter_action = ctk.CTkFrame(scroll, fg_color="#242424", corner_radius=8, border_width=1, border_color="#3a3a3a")
@@ -475,6 +492,7 @@ class ImageApp(ctk.CTk):
         except Exception as e: messagebox.showerror("Erro", f"Failed: {e}")
 
     def reset_ui_params(self):
+        self.last_processed_preview = None
         if hasattr(self, 'filter_choice'):
             self.filter_choice.set("None")
             self.filter_choice_menu.set("None")
@@ -533,18 +551,41 @@ class ImageApp(ctk.CTk):
     def enable_controls(self):
         for btn in [self.btn_undo, self.btn_redo, self.btn_reset]: btn.configure(state="normal")
 
-    def update_displays(self, processed=None):
+    def update_displays(self, processed=None, is_resize=False):
         if self.image_service.original_image is None: return
-        w_scaled = int(600 * self.zoom_level); h_scaled = int(500 * self.zoom_level)
+        
+        # Cache processed preview
+        if processed is not None:
+            self.last_processed_preview = processed
+            
+        display_img = processed if processed is not None else (
+            self.last_processed_preview if hasattr(self, 'last_processed_preview') and self.last_processed_preview is not None
+            else self.image_service.current_image
+        )
+        
+        # Determine available dimensions dynamically based on container size
+        w_avail = self.left_canvas_frame.winfo_width() - 10
+        h_avail = self.left_canvas_frame.winfo_height() - 40 # subtract header height
+        
+        # Fall back to default dimensions if not mapped or too small
+        if w_avail < 50: w_avail = 600
+        if h_avail < 50: h_avail = 500
+        
+        w_scaled = int(w_avail * self.zoom_level)
+        h_scaled = int(h_avail * self.zoom_level)
+        
         orig_resized = resize_to_fit(self.image_service.original_image, w_scaled, h_scaled)
         pil_orig = cv2_to_pil(orig_resized)
         ctk_orig = ctk.CTkImage(light_image=pil_orig, dark_image=pil_orig, size=(pil_orig.width, pil_orig.height))
         self.original_canvas.configure(image=ctk_orig, text=""); self.original_canvas._image = ctk_orig
-        display_img = processed if processed is not None else self.image_service.current_image
+        
         proc_resized = resize_to_fit(display_img, w_scaled, h_scaled)
         pil_proc = cv2_to_pil(proc_resized)
         ctk_proc = ctk.CTkImage(light_image=pil_proc, dark_image=pil_proc, size=(pil_proc.width, pil_proc.height))
-        self.processed_canvas.configure(image=ctk_proc, text=""); self.processed_canvas._image = ctk_proc; self.update_histogram(display_img)
+        self.processed_canvas.configure(image=ctk_proc, text=""); self.processed_canvas._image = ctk_proc
+        
+        if not is_resize:
+            self.update_histogram(display_img)
 
     def update_histogram(self, image):
         self.hist_canvas.delete("all")
