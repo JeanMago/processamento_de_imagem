@@ -1,5 +1,6 @@
 import cv2
 import os
+import numpy as np
 
 class ImageService:
     def __init__(self):
